@@ -1,4 +1,6 @@
 import {_} from 'lodash';
+import {Logger} from './logger';
+const log = new Logger('injector.js');
 
 export class Injector { 
   constructor(resolvers) {
@@ -10,6 +12,7 @@ export class Injector {
     if (args[1]) {
       args = args[1].split(/\s*,\s*/);
     }
+    log.verbose('parsed arguments',args);
     return args;
   }
 

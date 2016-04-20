@@ -34,6 +34,9 @@
     "gulp-util": "^3.0.7"
   },
   "dependencies": {
-    "lodash": "^4.11.1"
+    "amqplib": "^0.4.1",
+    "lodash": "^4.11.1",
+    "winston": "^2.2.0",
+    "winston-logio": "git+ssh://git@github.com:jaakkos/winston-logio.git"
   }
 }
