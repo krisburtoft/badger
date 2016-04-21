@@ -41,5 +41,6 @@
     "sinon": "^1.17.3",
     "winston": "^2.2.0",
     "winston-logio": "git+ssh://git@github.com:jaakkos/winston-logio.git"
-  }
+  },
+  "postinstall": "gulp default"
 }
