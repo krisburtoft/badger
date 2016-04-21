@@ -32,3 +32,13 @@ output >> [Function: last]
   cons.on('ready', onReadyFunc)
   cons.on('error', handleError)
 ````
+
+## Logger
+
+````
+  let log = new Logger('logname')
+  log.error('mmsg')
+  log.warn('msg')
+  log.debug('msg')
+  log.verbose('msg')
+  log.silly('msg')
