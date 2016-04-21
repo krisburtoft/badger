@@ -4,7 +4,8 @@
   "description": "javascript utility library",
   "main": "index.js",
   "scripts": {
-    "test": "node_modules/gulp/bin/gulp.js test"
+    "test": "node_modules/gulp/bin/gulp.js test",
+    "postinstall": "gulp"
   },
   "repository": {
     "type": "git",
@@ -41,6 +42,5 @@
     "sinon": "^1.17.3",
     "winston": "^2.2.0",
     "winston-logio": "git+ssh://git@github.com:jaakkos/winston-logio.git"
-  },
-  "postinstall": "gulp default"
+  }
 }

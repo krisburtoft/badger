@@ -2,17 +2,27 @@ const amqp = require('amqplib')
 import {Logger} from './logger'
 import {options} from './options'
 import * as url from 'url'
-let EventEmitter = require('events')
+import {_} from 'lodash'
+import EventEmitter from 'events'
 import * as util from 'util'
+
 class Consumer extends EventEmitter {
-  constructor(queue, handler) {
+  constructor(ops) {
+    /*
+      { 
+        broker: amqp://host/vhost,
+        name: queuename
+      }
+    */
+
     super()
-    this.queue = queue
-    this.log = new Logger(queue)
-    this.exchangeUri = url.parse(options.exchange)
+    this.options = _.assign(options, ops || {})
+    this.queue = this.options.name
+    this.log = new Logger(this.queue)
+    this.exchangeUri = url.parse(this.options.exchange)
   }
 
-  bind(routeKey, ops) {
+  bind(routeKey, handler, ops) {
     return this.open()
       .then((channel) => {
         return channel.assertExchange(this.exchangeUri.host, this.exchangeUri.protocol.replace(':',''), ops || { autoDelete: false, durable: false })
@@ -24,7 +34,7 @@ class Consumer extends EventEmitter {
       .then((ch) => {
         this.channel = ch
         this.log.info('binding consumer to routeKey', routeKey)
-        return ch.bindExchange(this.exchangeUri.host, this.exchangeUri.host, routeKey, ops || { durable: false, mandatory: true })
+        return ch.bindExchange(this.exchangeUri.host, this.exchangeUri.host, routeKey, ops || { durable: false, autoDelete: false })
           .then(() => ch.assertQueue(this.queue) )
           .then(() => ch.bindQueue(this.queue, this.exchangeUri.host, routeKey) )
           .then(() => ch.consume(this.queue, (msg) => {
@@ -50,21 +60,18 @@ class Consumer extends EventEmitter {
     this.log.verbose('handler reply',this.exchangeUri.host, msg.replyTo, new Buffer(JSON.stringify(val)))
     this.channel.publish(this.exchangeUri.host, msg.replyTo, new Buffer(JSON.stringify(val)), { contentType: 'application/json'})
   }
-  onError(err) {
-    this.emit('error', err)
-  }
   open(ops) {
-    return amqp.connect(options.broker)
+    return amqp.connect(this.options.broker)
       .tap((conn) => {
         this.log.verbose('connection open')
-        conn.on('error',this.onError)
+        conn.on('error',(arg) => this.emit('error',arg))
       })
       .then((conn) => conn.createChannel())
       .tap((channel) => {
-        channel.on('error',this.onError)
+        channel.on('error',(arg) => this.emit('error',arg))
       })
       .catch((err) => {
-        this.log.error('amqp connection error', options.broker, err)
+        this.log.error('amqp connection error', this.options.broker, err)
 
       })
   }
@@ -87,3 +94,4 @@ class AmqpMessage {
 }
 
 export {Consumer}
+
