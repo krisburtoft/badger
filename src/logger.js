@@ -1,5 +1,5 @@
 import * as winston from 'winston';
-import * as options from './options';
+import {options} from './options';
 import * as path from 'path';
 
 
@@ -15,6 +15,7 @@ if(options.logio) {
     host: options.logioHost
   });
 }
+
 let logger = new winston.Logger({ transports: transports });
 
 class Logger {
