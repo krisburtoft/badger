@@ -16,9 +16,11 @@ describe('consumer.js', () => {
     Consumer = new mod.Consumer()
   })
   describe('bind', function() {
-    let connection
+    let connection, channel
     beforeEach(() => {
       connection = sinon.stub({ createChannel: function () {}, on: function () {}})
+      channel = { on: function() {} }
+      connection.createChannel.returns(channel)
       mockAmqp.connect.returns(bluebird.resolve(connection))
     })
 
@@ -37,8 +39,7 @@ describe('consumer.js', () => {
     })
 
     it('should return the channel', (d) => {
-      let channel = { on: function() {} }
-      connection.createChannel.returns(channel)
+      
       Consumer.open().then((r) => {
         expect(r).to.equal(channel)
         d()
