@@ -20,28 +20,28 @@ output >> [Function: last]
 ````javascript
   import {Consumer} from 'badger'
   
-  let cons = new Consumer('consumer')
+  let cons = Consumer('consumer-queue-name')
   cons.bind('abcd',handler)
 
   function handler(msg) {
-    new Logger('handler').info('msg',msg.body)
+    log.info('msg',msg.body)
     return msg.body
   }
 
   cons.on('ready', () => {
-    new Logger('ready').info('consumer ready');
+    log.info('consumer ready');
   })
   cons.on('error', () => {
-    new Logger('eventError').error('consumer ready');
+    log.error('consumer ready');
   })
 ````
 
 ## Logger
 
 ````javascript
-  import {Logger} from 'badger'
+  import {getLogger} from 'badger'
   
-  let log = new Logger('logname')
+  let log = getLogger('logname')
   log.error('mmsg')
   log.warn('msg')
   log.debug('msg')

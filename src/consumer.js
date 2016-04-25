@@ -1,94 +1,86 @@
 const amqp = require('amqplib')
-import {Logger} from './logger'
+import {getLogger} from './logger'
 import {options} from './options'
 import * as url from 'url'
 import {_} from 'lodash'
 import EventEmitter from 'events'
 import * as util from 'util'
+let log = getLogger(options.name)
 
-class Consumer extends EventEmitter {
-  constructor(ops) {
-    /*
-      { 
-        broker: amqp://host/vhost,
-        name: queuename
+export function Consumer(ops) {
+  _.assign(options, ops || {})
+  const queue = options.name;
+  const exchangeUri = url.parse(options.exchange)
+  let consumer = {
+    bind: function bind(routeKey, handler, ops) {
+      return this.open()
+        .then((channel) => {
+          return channel.assertExchange(exchangeUri.host, exchangeUri.protocol.replace(':',''), ops || { autoDelete: false, durable: false })
+            .then(function() {
+              return channel
+            })
+        })
+        .tap(() => log.verbose('exhange asserted', exchangeUri.host))
+        .then((ch) => {
+          this.channel = ch
+          log.info('binding consumer to routeKey', routeKey)
+          return ch.bindExchange(exchangeUri.host, exchangeUri.host, routeKey, ops || { durable: false, autoDelete: false })
+            .then(() => ch.assertQueue(queue) )
+            .then(() => ch.bindQueue(queue, exchangeUri.host, routeKey) )
+            .then(() => ch.consume(queue, (msg) => {
+              const message = new AmqpMessage(msg)
+              const val = handler(message)
+              return val && val.then ? val.then((r) => this.publish(r,message)) : this.publish(val,message)
+            },{ noAck: true }))
+        })
+        .tap(() => this.emit('ready'))
+    },
+
+    publish: function publish(val, msg) {
+      if(!msg.replyTo && val){
+        log.warn('publish| no replyTo for message')
+        return
       }
-    */
 
-    super()
-    this.options = _.assign(options, ops || {})
-    this.queue = this.options.name
-    this.log = new Logger(this.queue)
-    this.exchangeUri = url.parse(this.options.exchange)
-  }
+      if(msg.replyTo && !val) {
+        log.warn('no response body for message replyTo', msg.replyTo)
+        log.warn('setting default response for message {}')
+        val = {}
+      }
+      log.verbose('handler reply',exchangeUri.host, msg.replyTo, new Buffer(JSON.stringify(val)))
+      this.channel.publish(exchangeUri.host, msg.replyTo, new Buffer(JSON.stringify(val)), { contentType: 'application/json'})
+    },
+    open: function open(ops) {
+      return amqp.connect(options.broker)
+        .tap((conn) => {
+          log.verbose('connection open')
+          conn.on('error',(arg) => this.emit('error',arg))
+        })
+        .then((conn) => conn.createChannel())
+        .tap((channel) => {
+          channel.on('error',(arg) => this.emit('error',arg))
+        })
+        .catch((err) => {
+          log.error('amqp connection error', options.broker, err)
 
-  bind(routeKey, handler, ops) {
-    return this.open()
-      .then((channel) => {
-        return channel.assertExchange(this.exchangeUri.host, this.exchangeUri.protocol.replace(':',''), ops || { autoDelete: false, durable: false })
-          .then(function() {
-            return channel
-          })
-      })
-      .tap(() => this.log.verbose('exhange asserted', this.exchangeUri.host))
-      .then((ch) => {
-        this.channel = ch
-        this.log.info('binding consumer to routeKey', routeKey)
-        return ch.bindExchange(this.exchangeUri.host, this.exchangeUri.host, routeKey, ops || { durable: false, autoDelete: false })
-          .then(() => ch.assertQueue(this.queue) )
-          .then(() => ch.bindQueue(this.queue, this.exchangeUri.host, routeKey) )
-          .then(() => ch.consume(this.queue, (msg) => {
-            const message = new AmqpMessage(msg)
-            const val = handler(message)
-            return val && val.then ? val.then((r) => this.publish(r,message)) : this.publish(val,message)
-          },{ noAck: true }))
-      })
-      .tap(() => this.emit('ready'))
-  }
-
-  publish(val, msg) {
-    if(!msg.replyTo && val){
-      this.log.warn('publish| no replyTo for message')
-      return
+        })
     }
-
-    if(msg.replyTo && !val) {
-      this.log.warn('no response body for message replyTo', msg.replyTo)
-      this.log.warn('setting default response for message {}')
-      val = {}
-    }
-    this.log.verbose('handler reply',this.exchangeUri.host, msg.replyTo, new Buffer(JSON.stringify(val)))
-    this.channel.publish(this.exchangeUri.host, msg.replyTo, new Buffer(JSON.stringify(val)), { contentType: 'application/json'})
   }
-  open(ops) {
-    return amqp.connect(this.options.broker)
-      .tap((conn) => {
-        this.log.verbose('connection open')
-        conn.on('error',(arg) => this.emit('error',arg))
-      })
-      .then((conn) => conn.createChannel())
-      .tap((channel) => {
-        channel.on('error',(arg) => this.emit('error',arg))
-      })
-      .catch((err) => {
-        this.log.error('amqp connection error', this.options.broker, err)
-
-      })
-  }
-
+  Object.assign(consumer, EventEmitter.prototype)
+  return consumer
 }
 
 
 class AmqpMessage {
   constructor(msg) {
     this.msg = msg
-    this.log = new Logger('AmqpMessage')
-    this.log.verbose(JSON.stringify(msg,null,4))
+    log = getLogger('AmqpMessage')
+    log.verbose(JSON.stringify(msg,null,4))
     this.replyTo = url.parse(msg.properties.replyTo).path.split('/')[1]
   }
   get body() {
     let body = this.msg.content.toString('utf8')
-    this.log.verbose('msg content', body)
+    log.verbose('msg content', body)
     return JSON.parse(body)
   }
 }

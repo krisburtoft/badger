@@ -27,7 +27,7 @@ describe('consumer.js', () => {
     channel.bindExchange.returns(bluebird.resolve())
     connection.createChannel.returns(bluebird.resolve(channel))
     mockAmqp.connect.returns(bluebird.resolve(connection))
-    consumer = new mod.Consumer()
+    consumer = mod.Consumer({})
   })
   describe('open', () => {
     it('should use the broker options',(d) => {
@@ -81,7 +81,7 @@ describe('consumer.js', () => {
     })
     it('should bind the exchange with the passed in exchange uri', (d) => {
       options.exchange = 'topic://my-topic'
-      consumer = new mod.Consumer(options)
+      consumer = mod.Consumer(options)
       consumer.bind('abcd',() => {}).then(() => {
         expect(channel.bindExchange.args[0][0]).to.equal('my-topic')
         d()
@@ -90,7 +90,7 @@ describe('consumer.js', () => {
     it('should bind the queue with the correct arguments', (d) => {
       options.exchange = 'topic://my-topic'
       options.name = 'testqueue'
-      consumer = new mod.Consumer(options)
+      consumer = mod.Consumer(options)
       consumer.bind('route',() => {}).then(() => {
         expect(channel.bindQueue.args[0]).to.deep.equal([ 'testqueue', 'my-topic', 'route' ])
         d()

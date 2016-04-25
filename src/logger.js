@@ -16,23 +16,25 @@ if(options.logio) {
   });
 }
 
-let logger = new winston.Logger({ transports: transports });
-
-class Logger {
-  constructor(name) {
-    this.name = name;
-  }
-  static sliceName(name,a) {
-    const args = Array.prototype.slice.call(a);
-    args.unshift(name + '|');
-    return args;
-  }
-}
+let Logger = {};
+const logger = new winston.Logger({ transports: transports });
 
 ['error','warn','info','verbose','debug','silly'].forEach((method) => {
-  Logger.prototype[method] = function () {
-    logger[method].apply(logger, Logger.sliceName(this.name,arguments));
+  Logger[method] = function () {
+    logger[method].apply(logger, sliceName(this.name,arguments));
   }
 });
 
-export {Logger};
+function getLogger(name) {
+  return Object.assign({ name: name },Logger);
+}
+
+
+export {getLogger};
+
+
+function sliceName(name,a) {
+  const args = Array.prototype.slice.call(a);
+  args.unshift(name + '|');
+  return args;
+}
