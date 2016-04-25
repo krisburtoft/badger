@@ -17,10 +17,16 @@ output >> [Function: last]
 
 ## Consumer
 
+The consumer module will allow you to create an AMQP RabbitMQ consumer which will bind to the specified broker, queue, and routeKey
+
 ````javascript
   import {Consumer} from 'badger'
   
-  let cons = Consumer('consumer-queue-name')
+  let cons = Consumer({ broker: 'amqp://guest:guest@lacalhost', exchange: 'topic://my-topic-exchange', name: 'my-queue-name'})
+
+  /* 
+    Bind the route 'abcd' of the 'my-queue-name' queue to the `handler` function
+  */
   cons.bind('abcd',handler)
 
   function handler(msg) {
