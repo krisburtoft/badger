@@ -8,11 +8,15 @@ let bluebird = require('bluebird')
 let _ = require('lodash')
 let mod
 describe('consumer.js', () => {
-  let consumer, mockAmqp, connection, channel
+  let consumer, mockAmqp, connection, channel, mockConnect
   beforeEach(() => {
     mockAmqp = sinon.stub({ connect: function () {} })
+    mockConnect = {
+      connect: sinon.stub({ open: function() {}, emit: () => {}, on: ()=> {} })
+    }
     mod =  proxyquire('../src/consumer', {
-      'amqplib': mockAmqp
+      'amqplib': mockAmqp,
+      './connect': mockConnect
     })
     connection = sinon.stub({ createChannel: function () {}, on: function () {}})
     channel = sinon.stub({ 
@@ -26,43 +30,11 @@ describe('consumer.js', () => {
     channel.assertExchange.returns(bluebird.resolve())
     channel.bindExchange.returns(bluebird.resolve())
     connection.createChannel.returns(bluebird.resolve(channel))
+    mockConnect.connect.open.returns(bluebird.resolve(bluebird.resolve(channel)))
     mockAmqp.connect.returns(bluebird.resolve(connection))
     consumer = mod.Consumer({})
   })
-  describe('open', () => {
-    it('should use the broker options',(d) => {
-      consumer.open().then(() =>{
-        expect(mockAmqp.connect.args[0][0]).to.equal(options.broker)
-        d()
-      }).catch(d)
-    })
-
-    it('should create a channel', (d) => {
-      consumer.open().then(() => {
-        expect(connection.createChannel.callCount).to.equal(1)
-        d()
-      }).catch(d)
-    })
-
-    it('should return the channel', (d) => {
-      consumer.open().then((r) => {
-        expect(r).to.equal(channel)
-        d()
-      }).catch(d)
-    })
-
-    it('should use the correct broker', (d) => {
-      let ops = {
-        broker: 'amqp://user:password@mybroker'
-      }
-      consumer = new mod.Consumer(ops)
-      consumer.open().then(() => {
-        expect(mockAmqp.connect.args[0][0]).to.equal(ops.broker)
-        d()
-      }).catch(d)
-    })
-  })
-
+  
 
   describe('bind', () => {
     

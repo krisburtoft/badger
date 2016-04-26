@@ -42,6 +42,16 @@ The consumer module will allow you to create an AMQP RabbitMQ consumer which wil
   })
 ````
 
+````javascript
+  import {Publisher} from 'badger'
+  
+  Publisher({broker: 'amqp://guest:guest@localhost'}).then((publisher) => {
+      publisher.getReply({foo: 'bar'},'foo-consumer').then((response) => {
+        console.log('foo-consumer response',response)
+      }).catch(console.error.bind(console))
+    })
+````
+
 ## Logger
 
 ````javascript
