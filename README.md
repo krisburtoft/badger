@@ -73,7 +73,7 @@ Create a microservice consumer like so...
 ````javascript
   import {AmqpMicro} from 'badger'
 
-  const options = {
+  const defaults = {
     broker: 'amqp://guest:guest@lacalhost',
     name: 'my-microservice-queue',
     exchange: 'topic://my-topic-exchange',
