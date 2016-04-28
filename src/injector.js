@@ -1,7 +1,9 @@
-import {_} from 'lodash';
-import {getLogger} from './logger';
-const log = getLogger('injector.js');
-
+import {_} from 'lodash'
+import * as logger from './logger'
+const log = logger.getLogger('injector.js')
+const Consumer = require('./consumer.js').Consumer
+const Publisher = require('./publisher.js').Publisher
+let injectables = { Promise: require('bluebird'), publisher: Publisher, logger: logger, consumer: undefined }
 const Injector = {
   parseArguments: function parseArguments(fn) {
     let args = /\(\s*([^)]+?)\s*\)/.exec(fn.toString());
@@ -11,10 +13,13 @@ const Injector = {
     log.verbose('parsed arguments',args);
     return args;
   },
-  inject: function inject(fn) {
-    let args = this.parseArguments(fn);
-    let parsed = args.map((t) => {
-      return require(t);
+  inject: function inject(fn,options) {
+    injectables.options = options
+    injectables.consumer = Consumer(options)
+    const args = this.parseArguments(fn);
+    
+    const parsed = args.map((t) => {
+      return injectables[t] || require(t)
     });
     fn.apply(undefined,parsed);
   }

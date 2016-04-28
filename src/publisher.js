@@ -5,14 +5,13 @@ import {_} from 'lodash'
 import * as util from 'util'
 import {Consumer} from './consumer.js'
 import * as shortid from 'shortid'
-import {AmqpMessage} from './message'
+import {AmqpMessage} from './AmqpMessage'
 
 const P = require('bluebird')
 const amqp = require('amqplib')
 const connect = require('./connect').connect
 const log = getLogger(options.name + ':badger:publisher')
 const publisher = {
-  queue: {},
   bindResponseConsumer: function bind(queue) {
     return this.open()
       .then((channel) => {

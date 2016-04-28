@@ -3,7 +3,8 @@ const amqp = require('amqplib')
 
 const connect = {
   open: function open() {
-    return amqp.connect(this.options.broker)
+    return this.promise ? this.promise :
+    this.promise = amqp.connect(this.options.broker)
       .then((conn) => conn.createChannel())
       .catch((err) => this.emit('error',err))
   }

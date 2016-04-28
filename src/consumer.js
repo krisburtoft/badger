@@ -3,7 +3,7 @@ import {options} from './options'
 import * as url from 'url'
 import {_} from 'lodash'
 import * as util from 'util'
-import {AmqpMessage} from './message'
+import {AmqpMessage} from './AmqpMessage'
 
 const connect = require('./connect').connect
 const amqp = require('amqplib')
@@ -52,7 +52,7 @@ const consumer = {
 
 Object.assign(consumer,connect)
 
-export function Consumer(ops) {
+function Consumer(ops) {
   _.assign(options, ops || {})
   const queue = options.name;
   const exchangeUri = url.parse(options.exchange)
