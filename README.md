@@ -64,3 +64,32 @@ The consumer module will allow you to create an AMQP RabbitMQ consumer which wil
   log.verbose('msg')
   log.silly('msg')
 ````
+
+##Putting it all together...
+
+##AmqpMicro
+
+Create a microservice consumer like so...
+````javascript
+  import {AmqpMicro} from 'badger'
+
+  const options = {
+    broker: 'amqp://guest:guest@lacalhost',
+    name: 'my-microservice-queue',
+    exchange: 'topic://my-topic-exchange',
+    ll: 'VERBOSE'
+  }
+
+  AmqpMicro(defaults,function(options,consumer,publisher,logger) {
+      const log = logger.getLogger('myicroservice-logger')
+      consumer.bind('my-routeKey',(msg) => {
+        log.info('msg received', msg)
+        //make some other rabbitmq request and return the promise.
+        return publisher.getReply('other-route', (otherMsg) => {
+            //results of this will be the response of this microservice request.
+            return otherMsg
+          })
+      })
+    }
+  )
+````
