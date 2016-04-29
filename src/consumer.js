@@ -26,8 +26,12 @@ const consumer = {
           .then(() => ch.bindQueue(this.queue, this.exchangeUri.host, routeKey) )
           .then(() => ch.consume(this.queue, (msg) => {
             const message = new AmqpMessage(msg)
-            const val = handler(message)
-            return val && val.then ? val.then((r) => this.publish(r,message)) : this.publish(val,message)
+            const val = handler && handler(message)
+            if(!val) {
+              log.warn('no response from handler',val);
+              return;
+            }
+            return val.then ? val.then((r) => this.publish(r,message)) : this.publish(val,message)
           },{ noAck: true }))
       })
       .tap(() => this.emit('ready'))

@@ -3,25 +3,27 @@ import * as logger from './logger'
 const log = logger.getLogger('injector.js')
 const Consumer = require('./consumer.js').Consumer
 const Publisher = require('./publisher.js').Publisher
-let injectables = { Promise: require('bluebird'), publisher: Publisher, logger: logger, consumer: undefined }
+let injectables = { Promise: require('bluebird'), publisher: undefined, logger: logger, consumer: undefined }
 const Injector = {
   parseArguments: function parseArguments(fn) {
-    let args = /\(\s*([^)]+?)\s*\)/.exec(fn.toString());
+    let args = /\(\s*([^)]+?)\s*\)/.exec(fn.toString())
     if (args[1]) {
-      args = args[1].split(/\s*,\s*/);
+      args = args[1].split(/\s*,\s*/)
     }
-    log.verbose('parsed arguments',args);
-    return args;
+    log.verbose('parsed arguments',args)
+    return args
   },
   inject: function inject(fn,options) {
     injectables.options = options
     injectables.consumer = Consumer(options)
-    const args = this.parseArguments(fn);
-    
-    const parsed = args.map((t) => {
-      return injectables[t] || require(t)
-    });
-    fn.apply(undefined,parsed);
+    Publisher(options).then((publisher) => {
+      injectables.publisher = publisher
+      const args = this.parseArguments(fn)
+      const parsed = args.map((t) => {
+        return injectables[t] || require(t)
+      })
+      fn.apply(undefined,parsed)
+    })
   }
 }
 

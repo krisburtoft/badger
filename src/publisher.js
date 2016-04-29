@@ -35,11 +35,13 @@ const publisher = {
   getReply: function(val,routeKey) {
     return this.send(val, routeKey, util.format('%s/%s.reply.%d/%s',this.options.exchange,this.responseQueue,++this.count,this.responseQueue))
   },
-  send: function publish(val, routeKey, replyTo) {
+  send: function publish(val, routeKey, replyTo, headers) {
     log.info('sending with routekey',replyTo);
     const message = new Buffer(JSON.stringify(val));
     log.verbose('publisher.send:', this.exchangeUri.host, message)
-    this.channel.publish(this.exchangeUri.host, routeKey, message, { contentType: 'application/json', replyTo: replyTo})
+    const properties = Object.assign({ contentType: 'application/json', replyTo: replyTo}, headers)
+    log.silly('publisher.sending with',this.exchangeUri.host, routeKey, message, properties)
+    this.channel.publish(this.exchangeUri.host, routeKey, message, properties)
     if(replyTo) {
       return new P((resolve) => {
         this.queue[Symbol.for('rq' + this.count.toString())] = resolve;
@@ -57,9 +59,8 @@ Object.assign(publisher,connect)
 
 function Publisher(ops) {
   _.assign(options, ops || {})
-  console.log('publisher.options',publisher.options)
   publisher.options = options;
-  console.log('publisher.options',publisher.options)
+  log.verbose('publisher.options',publisher.options)
   const responseQueue = util.format('%s.%s',options.name,shortid.generate())
   const _pub = {
     exchangeUri: url.parse(options.exchange),
