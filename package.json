@@ -1,26 +1,26 @@
 {
-  "name": "badger",
+  "name": "bunny-bump",
   "version": "0.0.1",
   "description": "javascript utility library",
   "main": "index.js",
   "scripts": {
-    "test": "node_modules/gulp/bin/gulp.js test",
-    "postinstall": "npm install && gulp"
+    "test": "node_modules/gulp/bin/gulp.js test"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/krisburtoft/teal.git"
+    "url": "git+https://github.com/krisburtoft/bunny-bump.git"
   },
   "keywords": [
-    "javascript",
-    "utility"
+    "rabbitmq",
+    "utility",
+    "amqp"
   ],
   "author": "Kristopher Burtoft",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/krisburtoft/teal/issues"
+    "url": "https://github.com/krisburtoft/bunny-bump/issues"
   },
-  "homepage": "https://github.com/krisburtoft/teal#readme",
+  "homepage": "https://github.com/krisburtoft/bunny-bump#readme",
   "devDependencies": {
     "babel-cli": "^6.7.5",
     "babel-core": "^6.7.6",

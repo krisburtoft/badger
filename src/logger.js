@@ -2,17 +2,17 @@ import * as winston from 'winston';
 import {options} from './options';
 import * as path from 'path';
 
-
+const ops = options()
 let transports = [
-  new winston.transports.Console({ level: options.ll, colorize: true, timestamp: true }),
-  new winston.transports.File({ level: options.ll, filename: path.join(process.cwd(),'log',options.name + '.log'), timestamp: true })
+  new winston.transports.Console({ level: ops.ll, colorize: true, timestamp: true }),
+  new winston.transports.File({ level: ops.ll, filename: path.join(process.cwd(),'log',ops.name + '.log'), timestamp: true })
 ];
 
-if(options.logio) {
+if(ops.logio) {
   transports.push( new winston.transports.Logio, {
     port: 28777,
-    node_name: options.name,
-    host: options.logioHost
+    node_name: ops.name,
+    host: ops.logioHost
   });
 }
 

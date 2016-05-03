@@ -1,11 +1,11 @@
-# badger
+# bunny-bump
 
 _Utility class library_
 
 ## Injector
 
 ````javascript
-  import {Injector} from 'badger';
+  import {Injector} from 'bunny-bump';
 
   function injectable(lodash) {
    console.log(lodash.last);
@@ -20,7 +20,7 @@ output >> [Function: last]
 The consumer module will allow you to create an AMQP RabbitMQ consumer which will bind to the specified broker, queue, and routeKey
 
 ````javascript
-  import {Consumer} from 'badger'
+  import {Consumer} from 'bunny-bump'
   
   let cons = Consumer({ broker: 'amqp://guest:guest@lacalhost', exchange: 'topic://my-topic-exchange', name: 'my-queue-name'})
 
@@ -43,7 +43,7 @@ The consumer module will allow you to create an AMQP RabbitMQ consumer which wil
 ````
 
 ````javascript
-  import {Publisher} from 'badger'
+  import {Publisher} from 'bunny-bump'
   
   Publisher({broker: 'amqp://guest:guest@localhost'}).then((publisher) => {
       publisher.getReply({foo: 'bar'},'foo-consumer').then((response) => {
@@ -55,7 +55,7 @@ The consumer module will allow you to create an AMQP RabbitMQ consumer which wil
 ## Logger
 
 ````javascript
-  import {getLogger} from 'badger'
+  import {getLogger} from 'bunny-bump'
   
   let log = getLogger('logname')
   log.error('mmsg')
@@ -71,7 +71,7 @@ The consumer module will allow you to create an AMQP RabbitMQ consumer which wil
 
 Create a microservice consumer like so...
 ````javascript
-  import {AmqpMicro} from 'badger'
+  import {AmqpMicro} from 'bunny-bump'
 
   const defaults = {
     broker: 'amqp://guest:guest@lacalhost',
