@@ -10,7 +10,6 @@ import {AmqpMessage} from './AmqpMessage'
 const P = require('bluebird')
 const amqp = require('amqplib')
 const connect = require('./connect').connect
-const log = getLogger(options.name + ':badger:publisher')
 const publisher = {
   bindResponseConsumer: function bind(queue) {
     return this.open()
@@ -20,13 +19,13 @@ const publisher = {
             return channel
           })
       })
-      .tap(() => log.verbose('exhange asserted', this.exchangeUri.host))
+      .tap(() => this.log.verbose('exhange asserted', this.exchangeUri.host))
       .then((ch) => {
         this.channel = ch
         queue = queue + '.#'
-        log.info('binding consumer reply consumer ', this.exchangeUri.host, this.exchangeUri.host, queue, this.options )
+        this.log.info('binding consumer reply consumer ', this.exchangeUri.host, this.exchangeUri.host, queue, this.options )
         return ch.bindExchange(this.exchangeUri.host, this.exchangeUri.host, queue, { durable: false, autoDelete: false })
-          .tap(() => log.info('queue asserted'))
+          .tap(() => this.log.info('queue asserted'))
           .then(() => ch.assertQueue(queue, { durable: false, autoDelete: true }) )
           .then(() => ch.bindQueue(queue, this.exchangeUri.host, queue) )
           .then(() => ch.consume(queue, this.handler.bind(this),{ noAck: true }))
@@ -36,11 +35,11 @@ const publisher = {
     return this.send(val, routeKey, util.format('%s/%s.reply.%d/%s',this.options.exchange,this.responseQueue,++this.count,this.responseQueue))
   },
   send: function publish(val, routeKey, replyTo, headers) {
-    log.info('sending with routekey',replyTo);
+    this.log.info('sending with routekey',replyTo);
     const message = new Buffer(JSON.stringify(val));
-    log.verbose('publisher.send:', this.exchangeUri.host, message)
+    this.log.verbose('publisher.send:', this.exchangeUri.host, message)
     const properties = Object.assign({ contentType: 'application/json', replyTo: replyTo}, headers)
-    log.silly('publisher.sending with',this.exchangeUri.host, routeKey, message, properties)
+    this.log.silly('publisher.sending with',this.exchangeUri.host, routeKey, message, properties)
     this.channel.publish(this.exchangeUri.host, routeKey, message, properties)
     if(replyTo) {
       return new P((resolve) => {
@@ -58,16 +57,18 @@ const publisher = {
 Object.assign(publisher,connect)
 
 function Publisher(ops) {
-  _.assign(options, ops || {})
-  publisher.options = options;
-  log.verbose('publisher.options',publisher.options)
+  ops = options(ops)
+  publisher.options = ops;
+
   const responseQueue = util.format('%s.%s',options.name,shortid.generate())
   const _pub = {
-    exchangeUri: url.parse(options.exchange),
+    exchangeUri: url.parse(ops.exchange),
     responseQueue: responseQueue,
     count: 0
   };
   Object.assign(publisher,_pub)
+  publisher.log = getLogger(ops.name + ':badger:publisher')
+  publisher.log.verbose('publisher.options',publisher.options)
   return publisher.open(options)
     .then(() => publisher.bindResponseConsumer(responseQueue))
     .then(() => publisher)

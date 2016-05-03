@@ -2,7 +2,7 @@
 
 const expect = require('chai').expect
 let sinon = require('sinon')
-let options = require('../src/options').options
+let options = require('../src/options').options({})
 let proxyquire = require('proxyquire')
 let bluebird = require('bluebird')
 let _ = require('lodash')
