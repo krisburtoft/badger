@@ -1,6 +1,6 @@
 {
   "name": "bunny-bump",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "javascript utility library",
   "main": "index.js",
   "scripts": {
