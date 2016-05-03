@@ -23,7 +23,7 @@ const publisher = {
       .then((ch) => {
         this.channel = ch
         queue = queue + '.#'
-        this.log.info('binding consumer reply consumer ', this.exchangeUri.host, this.exchangeUri.host, queue, this.options )
+        this.log.info('binding publisher reply consumer ', this.exchangeUri.host, this.exchangeUri.host, queue, this.options )
         return ch.bindExchange(this.exchangeUri.host, this.exchangeUri.host, queue, { durable: false, autoDelete: false })
           .tap(() => this.log.info('queue asserted'))
           .then(() => ch.assertQueue(queue, { durable: false, autoDelete: true }) )
@@ -60,7 +60,7 @@ function Publisher(ops) {
   ops = options(ops)
   publisher.options = ops;
 
-  const responseQueue = util.format('%s.%s',options.name,shortid.generate())
+  const responseQueue = util.format('%s.%s',ops.name,shortid.generate())
   const _pub = {
     exchangeUri: url.parse(ops.exchange),
     responseQueue: responseQueue,
