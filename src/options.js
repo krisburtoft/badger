@@ -1,3 +1,5 @@
+const minimist = require('minimist')
+
 
 function options(overrides) {
   let defaults = {
@@ -8,7 +10,7 @@ function options(overrides) {
   };
   var merged = Object.assign(defaults,overrides);
 
-  return require('minimist')(process.argv.slice(2), { default: merged, boolean: [] });
+  return minimist(process.argv.slice(2), { default: merged, boolean: [] });
 }
 
 
