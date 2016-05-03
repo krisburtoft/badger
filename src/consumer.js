@@ -57,13 +57,13 @@ const consumer = {
 Object.assign(consumer,connect)
 
 function Consumer(ops) {
-  _.assign(options, ops || {})
-  const queue = options.name;
-  const exchangeUri = url.parse(options.exchange)
+  ops = options(ops)
+  const queue = ops.name;
+  const exchangeUri = url.parse(ops.exchange)
   var cons = {
-    queue: options.name,
-    exchangeUri: url.parse(options.exchange),
-    options: options
+    queue: ops.name,
+    exchangeUri: url.parse(ops.exchange),
+    options: ops
   }
   Object.assign(cons,consumer)
   return cons

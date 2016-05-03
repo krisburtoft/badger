@@ -1,10 +1,17 @@
-let defaults = {
-  broker: 'amqp://localhost',
-  exchange: 'topic://medseek-api',
-  ll: 'warn',
-  name: 'badger'
-};
+const minimist = require('minimist')
 
-const options = require('minimist')(process.argv.slice(2), { default: defaults, boolean: [] });
+
+function options(overrides) {
+  let defaults = {
+    broker: 'amqp://guest:guest@localhost',
+    exchange: 'topic://medseek-api',
+    ll: 'warn',
+    name: 'badger'
+  };
+  var merged = Object.assign(defaults,overrides);
+
+  return minimist(process.argv.slice(2), { default: merged, boolean: [] });
+}
+
 
 export { options };
