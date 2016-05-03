@@ -1,6 +1,6 @@
 {
   "name": "bunny-bump",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "javascript utility library",
   "main": "index.js",
   "scripts": {
@@ -38,7 +38,9 @@
   },
   "dependencies": {
     "amqplib": "^0.4.1",
+    "bluebird": "^3.3.5",
     "lodash": "^4.11.1",
+    "minimist": "^1.2.0",
     "shortid": "^2.2.6",
     "sinon": "^1.17.3",
     "winston": "^2.2.0",

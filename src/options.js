@@ -3,9 +3,9 @@ const minimist = require('minimist')
 function options(overrides) {
   let defaults = {
     broker: 'amqp://guest:guest@localhost',
-    exchange: 'topic://medseek-api',
+    exchange: 'topic://default-topic',
     ll: 'warn',
-    name: 'badger'
+    name: 'bunny-bump'
   };
   var merged = Object.assign(defaults,overrides);
 
